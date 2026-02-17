@@ -8,9 +8,12 @@ type Card = {
   answer: string;
 };
 
+type Difficulty = "Easy" | "Medium" | "Hard";
+type Topic = keyof typeof quizBank;
+
 export default function Home() {
-  const [topic, setTopic] = useState("World Capitals");
-  const [difficulty, setDifficulty] = useState("Easy");
+  const [topic, setTopic] = useState<Topic>("World Capitals");
+  const [difficulty, setDifficulty] = useState<Difficulty>("Easy");
   const [cards, setCards] = useState<Card[]>([]);
   const [current, setCurrent] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -36,7 +39,7 @@ export default function Home() {
           <select
             className="w-full p-4 rounded-xl border text-lg"
             value={topic}
-            onChange={(e) => setTopic(e.target.value)}
+            onChange={(e) => setTopic(e.target.value as Topic)}
           >
             {Object.keys(quizBank).map((t) => (
               <option key={t}>{t}</option>
@@ -44,7 +47,7 @@ export default function Home() {
           </select>
 
           <div className="flex gap-3">
-            {["Easy", "Medium", "Hard"].map((d) => (
+            {(["Easy", "Medium", "Hard"] as Difficulty[]).map((d) => (
               <button
                 key={d}
                 onClick={() => setDifficulty(d)}
@@ -104,14 +107,15 @@ export default function Home() {
           <p className="text-gray-500">Tap card to flip</p>
 
           <button
-          onClick={() => {
-            if (current === cards.length - 1) {
-              setScreen("setup");
-            } else {
-              setShowAnswer(false);
-              setCurrent((prev) => prev + 1);
-            }
-          }}           className="w-full bg-black text-white py-4 rounded-2xl text-xl font-bold hover:scale-105 transition"
+            onClick={() => {
+              if (current === cards.length - 1) {
+                setScreen("setup");
+              } else {
+                setShowAnswer(false);
+                setCurrent((prev) => prev + 1);
+              }
+            }}
+            className="w-full bg-black text-white py-4 rounded-2xl text-xl font-bold hover:scale-105 transition"
           >
             {current === cards.length - 1 ? "Finish 🎉" : "Next ➡"}
           </button>
