@@ -1,65 +1,123 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { quizBank } from "./data/quizBank";
+
+type Card = {
+  question: string;
+  answer: string;
+};
 
 export default function Home() {
+  const [topic, setTopic] = useState("World Capitals");
+  const [difficulty, setDifficulty] = useState("Easy");
+  const [cards, setCards] = useState<Card[]>([]);
+  const [current, setCurrent] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [screen, setScreen] = useState<"setup" | "play">("setup");
+
+  const generateQuiz = () => {
+    const pool = quizBank[topic][difficulty];
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    setCards(shuffled.slice(0, 5));
+    setCurrent(0);
+    setShowAnswer(false);
+    setScreen("play");
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen w-screen bg-gradient-to-b from-sky-100 to-white flex flex-col items-center justify-center p-4">
+
+      {screen === "setup" && (
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-6 text-center">
+          <h1 className="text-4xl font-bold">🧠 Flashly</h1>
+          <p className="text-gray-500">Learn something new in 5 cards</p>
+
+          <select
+            className="w-full p-4 rounded-xl border text-lg"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {Object.keys(quizBank).map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+
+          <div className="flex gap-3">
+            {["Easy", "Medium", "Hard"].map((d) => (
+              <button
+                key={d}
+                onClick={() => setDifficulty(d)}
+                className={`flex-1 py-3 rounded-xl font-semibold transition ${
+                  difficulty === d
+                    ? "bg-black text-white"
+                    : "bg-gray-100"
+                }`}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={generateQuiz}
+            className="w-full bg-black text-white py-4 rounded-2xl text-xl font-bold hover:scale-105 transition"
           >
-            Documentation
-          </a>
+            Start Learning 🚀
+          </button>
         </div>
-      </main>
-    </div>
+      )}
+
+      {screen === "play" && cards.length > 0 && (
+        <div className="w-full max-w-md flex flex-col items-center space-y-4">
+
+          <div className="flex justify-between w-full">
+            <button onClick={() => setScreen("setup")} className="text-gray-500">
+              ← Back
+            </button>
+            <span>{current + 1}/{cards.length}</span>
+          </div>
+
+          {/* CARD */}
+          <div
+            key={current}
+            className="relative w-full h-64 cursor-pointer perspective"
+            onClick={() => setShowAnswer(!showAnswer)}
+          >
+            <div
+              className={`absolute inset-0 transition-transform duration-700 transform-style-preserve-3d ${
+                showAnswer ? "rotate-y-180" : ""
+              }`}
+            >
+              {/* FRONT */}
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-200 to-purple-200 rounded-3xl shadow-xl flex items-center justify-center p-6 backface-hidden text-2xl font-bold text-center">
+                {cards[current].question}
+              </div>
+
+              {/* BACK */}
+              <div className="absolute inset-0 bg-gradient-to-br from-green-200 to-emerald-200 rounded-3xl shadow-xl flex items-center justify-center p-6 backface-hidden rotate-y-180 text-2xl font-bold text-center">
+                {cards[current].answer}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-gray-500">Tap card to flip</p>
+
+          <button
+          onClick={() => {
+            if (current === cards.length - 1) {
+              setScreen("setup");
+            } else {
+              setShowAnswer(false);
+              setCurrent((prev) => prev + 1);
+            }
+          }}           className="w-full bg-black text-white py-4 rounded-2xl text-xl font-bold hover:scale-105 transition"
+          >
+            {current === cards.length - 1 ? "Finish 🎉" : "Next ➡"}
+          </button>
+        </div>
+      )}
+
+    </main>
   );
 }
